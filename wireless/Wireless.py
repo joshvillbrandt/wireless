@@ -5,7 +5,8 @@ import subprocess
 # attempt to retrieve the iwlist response for a given ssid
 def cmd(cmd):
     return subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
+        cmd, shell=True,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
 
 
 # abstracts away the wifi details
