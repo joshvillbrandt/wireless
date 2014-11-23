@@ -18,6 +18,8 @@ This library can control a computer's wireless adapter to connect to a network. 
 sudo pip install wireless
 ```
 
+To use the `nmcli` on Ubuntu, one must have the right permissions in place. A few options are listed [here](https://wiki.archlinux.org/index.php/NetworkManager#Set_up_PolicyKit_permissions).
+
 ## Usage
 
 A typical usage looks like this:

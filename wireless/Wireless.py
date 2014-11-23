@@ -61,11 +61,30 @@ class WirelessDriver:
 class NmcliWireless(WirelessDriver):
     _currentSSID = None
 
+    # clean up connections where partial is part of the connection name
+    # this is needed to prevent the following error after extended use:
+    # 'maximum number of pending replies per connection has been reached'
+    def _clean(self, partial):
+        # list matching connections
+        response = cmd('nmcli --fields UUID,NAME con list | grep {}'.format(
+            partial))
+
+        # delete all of the matching connections
+        for line in response.splitlines():
+            uuid = line.split()[0]
+            cmd('nmcli con delete uuid {}'.format(uuid))
+
     # connect to a network
     def connect(self, ssid, password):
+        # clean up previous connection
+        if self._currentSSID is not None:
+            self._clean(self._currentSSID)
+
+        # attempt to connect
         response = cmd('nmcli dev wifi connect {} password {}'.format(
             ssid, password))
 
+        # parse response
         if len(response) == 0:
             self._currentSSID = ssid
             return True
@@ -90,12 +109,12 @@ class NetworksetupWireless(WirelessDriver):
         self._interface = self._autoDetectInterface()
 
     def _autoDetectInterface(self):
+        # grab list of interfaces
         response = cmd('networksetup -listallhardwareports')
-        lines = response.splitlines()
 
         # parse response
         detectedWifi = False
-        for line in lines:
+        for line in response.splitlines():
             if detectedWifi:
                 # this line has our interface name in it
                 return line.replace('Device: ', '')
@@ -109,9 +128,11 @@ class NetworksetupWireless(WirelessDriver):
 
     # connect to a network
     def connect(self, ssid, password):
+        # attempt to connect
         response = cmd('networksetup -setairportnetwork {} {} {}'.format(
             self._interface, ssid, password))
 
+        # parse response
         if len(response) == 0:
             self._currentSSID = ssid
             return True
