@@ -11,4 +11,4 @@ class TestGoPro(unittest.TestCase):
 
     def test_import(self):
         # if this module loads, then the import worked...
-        pass
+        self.assertTrue(hasattr(Wireless, 'connect'))
