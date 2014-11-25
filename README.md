@@ -39,6 +39,10 @@ wireless.connect(ssid='ssid', password='password')
 
 This project uses [semantic versioning](http://semver.org/).
 
+### v0.1.1 - 2014/11/24
+
+* Better documentation formatting for PyPI
+
 ### v0.1.0 - 2014/11/22
 
 * Initial release
