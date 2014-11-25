@@ -2,12 +2,20 @@
 
 from setuptools import setup
 
+# auto-convert README.md
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except ImportError:
+    # we'll just use the poorly formatted Markdown file instead
+    long_description = open('README.md').read()
+
 setup(
     name='wireless',
     version='0.1.0',
     description='A dead simple, cross-platform Python library to connect to ' +
     'wireless networks.',
-    long_description=open('README.md').read(),
+    long_description=long_description,
     url='https://github.com/joshvillbrandt/wireless',
     author='Josh Villbrandt',
     author_email='josh@javconcepts.com',
@@ -16,7 +24,8 @@ setup(
     setup_requires=[
         'tox',
         'nose',
-        'flake8'
+        'flake8',
+        'pypandoc'
     ],
     install_requires=[
     ],
