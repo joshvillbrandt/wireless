@@ -6,7 +6,7 @@ from setuptools import setup
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
-except ImportError, OSError:
+except (ImportError, OSError):
     # we'll just use the poorly formatted Markdown file instead
     long_description = open('README.md').read()
 
