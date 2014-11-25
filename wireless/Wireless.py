@@ -72,8 +72,25 @@ class NmcliWireless(WirelessDriver):
 
         # delete all of the matching connections
         for line in response.splitlines():
-            uuid = line.split()[0]
-            cmd('nmcli con delete uuid {}'.format(uuid))
+            if len(line) > 0:
+                uuid = line.split()[0]
+                cmd('nmcli con delete uuid {}'.format(uuid))
+
+    # ignore warnings in nmcli output
+    # sometimes there are warnings but we connected just fine
+    def _errorInResponse(self, response):
+        # no error if no response
+        if len(response) == 0:
+            return False
+
+        # loop through each line
+        for line in response.splitlines():
+            # all error lines start with 'Error'
+            if line.startswith('Error'):
+                return True
+
+        # if we didn't find an error then we are in the clear
+        return False
 
     # connect to a network
     def connect(self, ssid, password):
@@ -86,12 +103,12 @@ class NmcliWireless(WirelessDriver):
             ssid, password))
 
         # parse response
-        if len(response) == 0:
-            self._currentSSID = ssid
-            return True
-        else:
+        if self._errorInResponse(response):
             self._currentSSID = None
             return False
+        else:
+            self._currentSSID = ssid
+            return True
 
     # returned the ssid of the current network
     def current(self):
