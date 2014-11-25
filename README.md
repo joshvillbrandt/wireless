@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/joshvillbrandt/wireless.svg?branch=master)](https://travis-ci.org/joshvillbrandt/wireless) [![Documentation Status](https://readthedocs.org/projects/wireless/badge/?version=latest)](https://readthedocs.org/projects/wireless/?badge=latest)
+[![Build Status](https://travis-ci.org/joshvillbrandt/wireless.svg?branch=master)](https://travis-ci.org/joshvillbrandt/wireless) [![Documentation Status](https://readthedocs.org/projects/wireless/badge/?version=latest)](http://wireless.readthedocs.org/en/latest/)
 
 # wireless
 
