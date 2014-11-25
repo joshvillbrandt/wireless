@@ -8,8 +8,10 @@ A dead simple, cross-platform Python library to connect to wireless networks.
 
 This library can control a computer's wireless adapter to connect to a network. Environments currently supported include:
 
-* Mac OS 10.10
-* Ubuntu 12.04
+Operating System | Network Managers | Tested Adapters
+--- | --- | ---
+Ubuntu 12.04, 14.04 | nmcli | Linksys AE3000, Intel Centrino 6250
+Mac OS 10.10 | networksetup | Macbook Pro
 
 ## Setup
 
@@ -17,7 +19,7 @@ This library can control a computer's wireless adapter to connect to a network. 
 sudo pip install wireless
 ```
 
-To use the `nmcli` on Ubuntu, one must have the right permissions in place. A few options are listed [here](https://wiki.archlinux.org/index.php/NetworkManager#Set_up_PolicyKit_permissions).
+To use the `nmcli` on Ubuntu 14.04, the right permissions must be in place. A few options are listed [here](https://wiki.archlinux.org/index.php/NetworkManager#Set_up_PolicyKit_permissions).
 
 ## Usage
 

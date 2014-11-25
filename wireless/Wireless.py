@@ -58,7 +58,7 @@ class WirelessDriver:
         pass
 
 
-# Ubuntu Driver
+# Linux nmcli Driver
 class NmcliWireless(WirelessDriver):
     _currentSSID = None
 
@@ -117,7 +117,7 @@ class NmcliWireless(WirelessDriver):
         return self._currentSSID
 
 
-# OS X Driver
+# OS X networksetup Driver
 class NetworksetupWireless(WirelessDriver):
     _interface = None
     _currentSSID = None
