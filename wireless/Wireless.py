@@ -4,7 +4,6 @@ import subprocess
 
 # send a command to the shell and return the result
 def cmd(cmd):
-    # print cmd
     return subprocess.Popen(
         cmd, shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -136,7 +135,7 @@ class NmcliWireless(WirelessDriver):
         self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} {}'.format(
+        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
             ssid, password, self._interface))
 
         # parse response
@@ -150,7 +149,8 @@ class NmcliWireless(WirelessDriver):
 
         # the current network is in the first column
         for line in response.splitlines():
-            return line.split()[0]
+            if len(line) > 0:
+                return line.split()[0]
 
         # return none if there was not an active connection
         return None
