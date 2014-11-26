@@ -214,7 +214,7 @@ class NetworksetupWireless(WirelessDriver):
         # parse response
         phrase = 'Current Wi-Fi Network: '
         if phrase in response:
-            return response.replace('Current Wi-Fi Network: ', '')
+            return response.replace('Current Wi-Fi Network: ', '').strip()
         else:
             return None
 
