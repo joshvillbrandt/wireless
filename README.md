@@ -33,13 +33,22 @@ wireless.connect(ssid='ssid', password='password')
 
 ## API
 
-* `Wireless()` - initialize the wifi driver
+* `Wireless([interface])` - initialize the wireless driver
 * `connect(ssid, password)` - attempts to connect to a network and returns True on success
 * `current()` - returns the name of the current network or None otherwise
+* `interfaces()` - list the available interfaces
+* `interface(interface)` - get or set the current interface
+* `power(power=True||False)` - get or set the power status of the adapter
 
 ## Change History
 
 This project uses [semantic versioning](http://semver.org/).
+
+### v0.2.0 - 2014/11/25
+
+* Added support for multiple network adapters with `interface()` and `interfaces()` methods
+* The `current()` method actually asks the wireless driver for the current SSID instead of returning the name of the most recently connected network
+* Added the `power()` method
 
 ### v0.1.1 - 2014/11/24
 

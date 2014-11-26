@@ -4,7 +4,7 @@ import unittest
 from wireless import Wireless
 
 
-class TestGoPro(unittest.TestCase):
+class TestWireless(unittest.TestCase):
     def setUp(self):
         # TODO
         pass

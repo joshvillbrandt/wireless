@@ -2,26 +2,38 @@ from abc import ABCMeta, abstractmethod
 import subprocess
 
 
-# attempt to retrieve the iwlist response for a given ssid
+# send a command to the shell and return the result
 def cmd(cmd):
+    # print cmd
     return subprocess.Popen(
         cmd, shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
 
 
-# abstracts away the wifi details
+# abstracts away wireless connection
 class Wireless:
     _driver = None
 
     # init
-    def __init__(self):
-        name = self._detect()
+    def __init__(self, interface=None):
+        # detect and init appropriate driver
+        name = self._detectDriver()
         if name == 'nmcli':
-            self._driver = NmcliWireless()
+            self._driver = NmcliWireless(interface=interface)
         elif name == 'networksetup':
-            self._driver = NetworksetupWireless()
+            self._driver = NetworksetupWireless(interface=interface)
 
-    def _detect(self):
+        # attempt to auto detect the interface if none was provided
+        if self.interface() is None:
+            interfaces = self.interfaces()
+            if len(interfaces) > 0:
+                self.interface(interfaces[0])
+
+        # raise an error if there is still no interface defined
+        if self.interface() is None:
+            raise Exception('Unabled to auto-detect the network interface.')
+
+    def _detectDriver(self):
         # try nmcli (Ubuntu 14.04)
         response = cmd('which nmcli')
         if len(response) > 0 and 'not found' not in response:
@@ -35,32 +47,58 @@ class Wireless:
         raise Exception('Cannot find compatible wireless API.')
 
     # connect to a network
-    def connect(self, **kwargs):
-        return self._driver.connect(**kwargs)
+    def connect(self, ssid, password):
+        return self._driver.connect(ssid, password)
 
-    # returned the ssid of the current network
-    def current(self, **kwargs):
-        return self._driver.current(**kwargs)
+    # return the ssid of the current network
+    def current(self):
+        return self._driver.current()
+
+    # return a list of wireless adapters
+    def interfaces(self):
+        return self._driver.interfaces()
+
+    # return the current wireless adapter
+    def interface(self, interface=None):
+        return self._driver.interface(interface)
+
+    # return the current wireless adapter
+    def power(self, power=None):
+        return self._driver.power(power)
 
 
 # abstract class for all wireless drivers
 class WirelessDriver:
     __metaclass__ = ABCMeta
 
-    # connect to a network
     @abstractmethod
     def connect(self, ssid, password):
         pass
 
-    # returned the ssid of the current network
     @abstractmethod
     def current(self):
+        pass
+
+    @abstractmethod
+    def interfaces(self):
+        pass
+
+    @abstractmethod
+    def interface(self, interface=None):
+        pass
+
+    @abstractmethod
+    def power(self, power=None):
         pass
 
 
 # Linux nmcli Driver
 class NmcliWireless(WirelessDriver):
-    _currentSSID = None
+    _interface = None
+
+    # init
+    def __init__(self, interface=None):
+        self.interface(interface)
 
     # clean up connections where partial is part of the connection name
     # this is needed to prevent the following error after extended use:
@@ -95,54 +133,68 @@ class NmcliWireless(WirelessDriver):
     # connect to a network
     def connect(self, ssid, password):
         # clean up previous connection
-        if self._currentSSID is not None:
-            self._clean(self._currentSSID)
+        self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {}'.format(
-            ssid, password))
+        response = cmd('nmcli dev wifi connect {} password {} {}'.format(
+            ssid, password, self._interface))
 
         # parse response
-        if self._errorInResponse(response):
-            self._currentSSID = None
-            return False
-        else:
-            self._currentSSID = ssid
-            return True
+        return not self._errorInResponse(response)
 
     # returned the ssid of the current network
     def current(self):
-        # TODO: actually check the current SSID with a shell call
-        # nmcli dev wifi | grep yes
-        return self._currentSSID
+        # list active connections for all interfaces
+        response = cmd('nmcli con status | grep {}'.format(
+            self.interface()))
+
+        # the current network is in the first column
+        for line in response.splitlines():
+            return line.split()[0]
+
+        # return none if there was not an active connection
+        return None
+
+    # return a list of wireless adapters
+    def interfaces(self):
+        # grab list of interfaces
+        response = cmd('nmcli dev')
+
+        # parse response
+        interfaces = []
+        for line in response.splitlines():
+            if 'wireless' in line:
+                # this line has our interface name in the first column
+                interfaces.append(line.split()[0])
+
+        # return list
+        return interfaces
+
+    # return the current wireless adapter
+    def interface(self, interface=None):
+        if interface is not None:
+            self._interface = interface
+        else:
+            return self._interface
+
+    # enable/disable wireless networking
+    def power(self, power=None):
+        if power is True:
+            cmd('nmcli nm wifi on')
+        elif power is False:
+            cmd('nmcli nm wifi off')
+        else:
+            response = cmd('nmcli nm wifi')
+            return 'enabled' in response
 
 
 # OS X networksetup Driver
 class NetworksetupWireless(WirelessDriver):
     _interface = None
-    _currentSSID = None
 
     # init
-    def __init__(self):
-        self._interface = self._autoDetectInterface()
-
-    def _autoDetectInterface(self):
-        # grab list of interfaces
-        response = cmd('networksetup -listallhardwareports')
-
-        # parse response
-        detectedWifi = False
-        for line in response.splitlines():
-            if detectedWifi:
-                # this line has our interface name in it
-                return line.replace('Device: ', '')
-            else:
-                # search for the line that has 'Wi-Fi' in it
-                if 'Wi-Fi' in line:
-                    detectedWifi = True
-
-        # if we are here then we failed to auto detect the interface
-        raise Exception('Unabled to auto-detect the network interface.')
+    def __init__(self, interface=None):
+        self.interface(interface)
 
     # connect to a network
     def connect(self, ssid, password):
@@ -150,15 +202,59 @@ class NetworksetupWireless(WirelessDriver):
         response = cmd('networksetup -setairportnetwork {} {} {}'.format(
             self._interface, ssid, password))
 
-        # parse response
-        if len(response) == 0:
-            self._currentSSID = ssid
-            return True
-        else:
-            self._currentSSID = None
-            return False
+        # parse response - assume success when there is no response
+        return (len(response) == 0)
 
     # returned the ssid of the current network
     def current(self):
-        # TODO: actually check the current SSID with a shell call
-        return self._currentSSID
+        # attempt to get current network
+        response = cmd('networksetup -getairportnetwork {}'.format(
+            self._interface))
+
+        # parse response
+        phrase = 'Current Wi-Fi Network: '
+        if phrase in response:
+            return response.replace('Current Wi-Fi Network: ', '')
+        else:
+            return None
+
+    # return a list of wireless adapters
+    def interfaces(self):
+        # grab list of interfaces
+        response = cmd('networksetup -listallhardwareports')
+
+        # parse response
+        interfaces = []
+        detectedWifi = False
+        for line in response.splitlines():
+            if detectedWifi:
+                # this line has our interface name in it
+                interfaces.append(line.replace('Device: ', ''))
+                detectedWifi = False
+            else:
+                # search for the line that has 'Wi-Fi' in it
+                if 'Wi-Fi' in line:
+                    detectedWifi = True
+
+        # return list
+        return interfaces
+
+    # return the current wireless adapter
+    def interface(self, interface=None):
+        if interface is not None:
+            self._interface = interface
+        else:
+            return self._interface
+
+    # enable/disable wireless networking
+    def power(self, power=None):
+        if power is True:
+            cmd('networksetup -setairportpower {} on'.format(
+                self._interface))
+        elif power is False:
+            cmd('networksetup -setairportpower {} off'.format(
+                self._interface))
+        else:
+            response = cmd('networksetup -getairportpower {}'.format(
+                self._interface))
+            return 'On' in response
