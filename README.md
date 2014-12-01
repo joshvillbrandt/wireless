@@ -40,6 +40,21 @@ wireless.connect(ssid='ssid', password='password')
 * `interface(interface)` - get or set the current interface
 * `power(power=True||False)` - get or set the power status of the adapter
 
+## Publishing
+
+First, install `pandoc` to auto-convert Markdown syntax into reStructuredText:
+
+```bash
+sudo apt-get install pandoc
+sudo pip install pypandoc
+```
+
+Then, following [this guide](http://peterdowns.com/posts/first-time-with-pypi.html), push the project to PyPI:
+
+```bash
+python setup.py sdist upload -r pypi
+```
+
 ## Change History
 
 This project uses [semantic versioning](http://semver.org/).
