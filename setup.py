@@ -12,7 +12,7 @@ except (ImportError, OSError):
 
 setup(
     name='wireless',
-    version='0.2.0',
+    version='0.2.1',
     description='A dead simple, cross-platform Python library to connect to ' +
     'wireless networks.',
     long_description=long_description,
@@ -24,8 +24,7 @@ setup(
     setup_requires=[
         'tox',
         'nose',
-        'flake8',
-        'pypandoc'
+        'flake8'
     ],
     install_requires=[
     ],

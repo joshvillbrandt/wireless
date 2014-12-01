@@ -44,6 +44,10 @@ wireless.connect(ssid='ssid', password='password')
 
 This project uses [semantic versioning](http://semver.org/).
 
+### v0.2.1 - 2014/12/01
+
+* remove dependency on `pandoc`
+
 ### v0.2.0 - 2014/11/25
 
 * Added support for multiple network adapters with `interface()` and `interfaces()` methods
