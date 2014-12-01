@@ -52,7 +52,7 @@ sudo pip install pypandoc
 Then, following [this guide](http://peterdowns.com/posts/first-time-with-pypi.html), push the project to PyPI:
 
 ```bash
-python setup.py sdist upload -r pypi
+sudo python setup.py sdist upload -r pypi
 ```
 
 ## Change History
