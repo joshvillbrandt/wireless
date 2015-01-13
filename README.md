@@ -14,15 +14,13 @@ nmcli | Ubuntu 12.04, 14.04 | Linksys AE3000, Intel Centrino 6250
 wpa_supplicant | Ubuntu 12.04, 14.04 | Intel Centrino 6250
 networksetup | Mac OS 10.10 | Macbook Pro
 
-Note that `network-manager` (the backend for `nmcli`) must not be running in order to use `wpa_supplicant`. This is because `network-manager` runs an instance of `wpa_supplicant` behind the scenes which will conflict with `wireless` if it tries to make one of its own. If you have a `network-manager` on your machine, but would before to use `wpa_supplicant` (not recommended), run `sudo service network-manager stop` before using `wireless`.
+
 
 ## Setup
 
 ```bash
 sudo pip install wireless
 ```
-
-To use the `nmcli` on Ubuntu 14.04, the right permissions must be in place. A few options are listed [here](https://wiki.archlinux.org/index.php/NetworkManager#Set_up_PolicyKit_permissions).
 
 ## Usage
 
@@ -34,6 +32,10 @@ wireless = Wireless()
 wireless.connect(ssid='ssid', password='password')
 ```
 
+Note: To use `nmcli` on Ubuntu 14.04, the right permissions must be in place. A few options are listed [here](https://wiki.archlinux.org/index.php/NetworkManager#Set_up_PolicyKit_permissions)
+
+Note: To use `wpa_supplicant`, `network-manager` (the backend for `nmcli`) must not be running. This is because `network-manager` runs an instance of `wpa_supplicant` behind the scenes which will conflict with the `wpa_supplicant` instance that this library would create. If you have a `network-manager` on your machine but would prefer to use `wpa_supplicant` (not recommended), run `sudo service network-manager stop` before using `wireless`.
+
 ## API
 
 * `Wireless([interface])` - initialize the wireless driver
@@ -43,21 +45,6 @@ wireless.connect(ssid='ssid', password='password')
 * `interface([interface])` - get or set the current interface
 * `power([True||False])` - get or set the power status of the adapter
 * `driver()` - return the name of driver being used for wireless control
-
-## Publishing
-
-First, install `pandoc` to auto-convert Markdown syntax into reStructuredText:
-
-```bash
-sudo apt-get install pandoc
-sudo pip install pypandoc
-```
-
-Then, following [this guide](http://peterdowns.com/posts/first-time-with-pypi.html), push the project to PyPI:
-
-```bash
-sudo python setup.py sdist upload -r pypi
-```
 
 ## Change History
 
@@ -89,3 +76,18 @@ This project uses [semantic versioning](http://semver.org/).
 ## Contributions
 
 Pull requests to the `develop` branch are welcomed!
+
+## Publishing
+
+First, install `pandoc` to auto-convert Markdown syntax into reStructuredText:
+
+```bash
+sudo apt-get install pandoc
+sudo pip install pypandoc
+```
+
+Then, following [this guide](http://peterdowns.com/posts/first-time-with-pypi.html), push the project to PyPI:
+
+```bash
+sudo python setup.py sdist upload -r pypi
+```
