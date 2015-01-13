@@ -6,12 +6,15 @@ A dead simple, cross-platform Python library to connect to wireless networks.
 
 ## Description
 
-This library can control a computer's wireless adapter to connect to a network. Environments currently supported include:
+This library can control a computer's wireless adapter to connect to a network. Environments currently supported include (in order of preference):
 
-Operating System | Network Managers | Tested Adapters
+Network Manager | Operating Systems | Tested Adapters
 --- | --- | ---
-Ubuntu 12.04, 14.04 | nmcli | Linksys AE3000, Intel Centrino 6250
-Mac OS 10.10 | networksetup | Macbook Pro
+nmcli | Ubuntu 12.04, 14.04 | Linksys AE3000, Intel Centrino 6250
+wpa_supplicant | Ubuntu 12.04, 14.04 | Intel Centrino 6250
+networksetup | Mac OS 10.10 | Macbook Pro
+
+Note that `network-manager` (the backend for `nmcli`) must not be running in order to use `wpa_supplicant`. This is because `network-manager` runs an instance of `wpa_supplicant` behind the scenes which will conflict with `wireless` if it tries to make one of its own. If you have a `network-manager` on your machine, but would before to use `wpa_supplicant` (not recommended), run `sudo service network-manager stop` before using `wireless`.
 
 ## Setup
 
@@ -37,8 +40,9 @@ wireless.connect(ssid='ssid', password='password')
 * `connect(ssid, password)` - attempts to connect to a network and returns True on success
 * `current()` - returns the name of the current network or None otherwise
 * `interfaces()` - list the available interfaces
-* `interface(interface)` - get or set the current interface
-* `power(power=True||False)` - get or set the power status of the adapter
+* `interface([interface])` - get or set the current interface
+* `power([True||False])` - get or set the power status of the adapter
+* `driver()` - return the name of driver being used for wireless control
 
 ## Publishing
 
@@ -58,6 +62,11 @@ sudo python setup.py sdist upload -r pypi
 ## Change History
 
 This project uses [semantic versioning](http://semver.org/).
+
+### v0.3.0 - 2015/01/13
+
+* Added support for `wpa_supplicant`
+* Added the `driver()` method
 
 ### v0.2.1 - 2014/12/01
 

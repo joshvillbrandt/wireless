@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import subprocess
+from time import sleep
 
 
 # send a command to the shell and return the result
@@ -11,15 +12,18 @@ def cmd(cmd):
 
 # abstracts away wireless connection
 class Wireless:
+    _driver_name = None
     _driver = None
 
     # init
     def __init__(self, interface=None):
         # detect and init appropriate driver
-        name = self._detectDriver()
-        if name == 'nmcli':
+        self._driver_name = self._detectDriver()
+        if self._driver_name == 'nmcli':
             self._driver = NmcliWireless(interface=interface)
-        elif name == 'networksetup':
+        elif self._driver_name == 'wpa_supplicant':
+            self._driver = WpasupplicantWireless(interface=interface)
+        elif self._driver_name == 'networksetup':
             self._driver = NetworksetupWireless(interface=interface)
 
         # attempt to auto detect the interface if none was provided
@@ -30,7 +34,7 @@ class Wireless:
 
         # raise an error if there is still no interface defined
         if self.interface() is None:
-            raise Exception('Unabled to auto-detect the network interface.')
+            raise Exception('Unable to auto-detect the network interface.')
 
     def _detectDriver(self):
         # try nmcli (Ubuntu 14.04)
@@ -38,12 +42,17 @@ class Wireless:
         if len(response) > 0 and 'not found' not in response:
             return 'nmcli'
 
+        # try nmcli (Ubuntu w/o network-manager)
+        response = cmd('which wpa_supplicant')
+        if len(response) > 0 and 'not found' not in response:
+            return 'wpa_supplicant'
+
         # try networksetup (Mac OS 10.10)
         response = cmd('which networksetup')
         if len(response) > 0 and 'not found' not in response:
             return 'networksetup'
 
-        raise Exception('Cannot find compatible wireless API.')
+        raise Exception('Unable to find compatible wireless driver.')
 
     # connect to a network
     def connect(self, ssid, password):
@@ -64,6 +73,10 @@ class Wireless:
     # return the current wireless adapter
     def power(self, power=None):
         return self._driver.power(power)
+
+    # return the driver name
+    def driver(self):
+        return self._driver_name
 
 
 # abstract class for all wireless drivers
@@ -186,6 +199,92 @@ class NmcliWireless(WirelessDriver):
         else:
             response = cmd('nmcli nm wifi')
             return 'enabled' in response
+
+
+# Linux wpa_supplicant Driver
+class WpasupplicantWireless(WirelessDriver):
+    _file = '/tmp/wpa_supplicant.conf'
+    _interface = None
+
+    # init
+    def __init__(self, interface=None):
+        self.interface(interface)
+
+    # connect to a network
+    def connect(self, ssid, password):
+        # attempt to stop any active wpa_supplicant instances
+        # ideally we do this just for the interface we care about
+        response = cmd('sudo killall wpa_supplicant')
+
+        # create configuration file
+        f = open(self._file, 'w')
+        f.write('network={{\n    ssid="{}"\n    psk="{}"\n}}\n'.format(
+            ssid, password))
+        f.close()
+
+        # attempt to connect
+        response = cmd('sudo wpa_supplicant -i{} -c{} -B'.format(
+            self._interface, self._file))
+
+        # check that the connection was successful
+        # i've never seen it take more than 3 seconds for the link to establish
+        sleep(4)
+        if self.current() != ssid:
+            return False
+
+        # attempt to grab an IP
+        # better hope we are connected because the timeout here is really long
+        response = cmd('sudo dhclient {}'.format(self._interface))
+
+        # parse response
+        return True
+
+    # returned the ssid of the current network
+    def current(self):
+        # get interface status
+        response = cmd('iwconfig {}'.format(
+            self.interface()))
+
+        # the current network is on the first line like ESSID:"network"
+        line = response.splitlines()[0]
+        line = line.replace('"', '')
+        parts = line.split('ESSID:')
+        if len(parts) > 1:
+            network = parts[1].strip()
+            if network != 'off/any':
+                return network
+
+        # return none if there was not an active connection
+        return None
+
+    # return a list of wireless adapters
+    def interfaces(self):
+        # grab list of interfaces
+        response = cmd('iwconfig')
+
+        # parse response
+        interfaces = []
+        for line in response.splitlines():
+            if len(line) > 0 and not line.startswith(' '):
+                # this line contains an interface name!
+                if 'no wireless extensions' not in line:
+                    # this is a wireless interface
+                    interfaces.append(line.split()[0])
+
+        # return list
+        return interfaces
+
+    # return the current wireless adapter
+    def interface(self, interface=None):
+        if interface is not None:
+            self._interface = interface
+        else:
+            return self._interface
+
+    # enable/disable wireless networking
+    def power(self, power=None):
+        # not supported yet
+        return None
 
 
 # OS X networksetup Driver
