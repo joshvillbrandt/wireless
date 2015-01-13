@@ -214,7 +214,7 @@ class WpasupplicantWireless(WirelessDriver):
     def connect(self, ssid, password):
         # attempt to stop any active wpa_supplicant instances
         # ideally we do this just for the interface we care about
-        response = cmd('sudo killall wpa_supplicant')
+        cmd('sudo killall wpa_supplicant')
 
         # create configuration file
         f = open(self._file, 'w')
@@ -223,7 +223,7 @@ class WpasupplicantWireless(WirelessDriver):
         f.close()
 
         # attempt to connect
-        response = cmd('sudo wpa_supplicant -i{} -c{} -B'.format(
+        cmd('sudo wpa_supplicant -i{} -c{} -B'.format(
             self._interface, self._file))
 
         # check that the connection was successful
@@ -234,7 +234,7 @@ class WpasupplicantWireless(WirelessDriver):
 
         # attempt to grab an IP
         # better hope we are connected because the timeout here is really long
-        response = cmd('sudo dhclient {}'.format(self._interface))
+        cmd('sudo dhclient {}'.format(self._interface))
 
         # parse response
         return True
