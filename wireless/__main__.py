@@ -52,8 +52,9 @@ def win_connect(ssid):
     profiles = get_win_profiles()
     print("[*] Scanning profiles for given SSID")
     for prof in profiles:
-        if get_win_profile_ssid(prof) == 'ssid':
+        if get_win_profile_ssid(prof) == ssid:
             print(Wireless.cmd("netsh wlan connect name=\"%s\"" % prof))
+            return
 
 
 if sys.argv[1:]:
