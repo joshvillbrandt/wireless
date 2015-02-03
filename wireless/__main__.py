@@ -1,4 +1,5 @@
 import os
+import sys
 
 import Wireless
 
@@ -46,10 +47,14 @@ def get_win_profile_ssid(profile):
         if "SSID name" in line:
             return line.split(":")[-1].strip(' "')
 
-
-if os.name == 'nt':
+def win_connect(ssid):
     print("[*] Get WiFi profiles")
     profiles = get_win_profiles()
     print("[*] Scanning profiles for given SSID")
     for prof in profiles:
-        print get_win_profile_ssid(prof)
+        if get_win_profile_ssid(prof) == 'ssid':
+            print(Wireless.cmd("netsh wlan connect name=\"%s\"" % prof))
+
+
+if sys.argv[1:]:
+    win_connect(sys.argv[1])
