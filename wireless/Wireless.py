@@ -216,6 +216,9 @@ class WpasupplicantWireless(WirelessDriver):
         # ideally we do this just for the interface we care about
         cmd('sudo killall wpa_supplicant')
 
+        # don't do DHCP for GoPros; sometimes we loose connection with the server
+        cmd('sudo ifconfig {} 10.5.5.10/24 up'.format(self._interface))
+
         # create configuration file
         f = open(self._file, 'w')
         f.write('network={{\n    ssid="{}"\n    psk="{}"\n}}\n'.format(
@@ -228,13 +231,13 @@ class WpasupplicantWireless(WirelessDriver):
 
         # check that the connection was successful
         # i've never seen it take more than 3 seconds for the link to establish
-        sleep(4)
+        sleep(5)
         if self.current() != ssid:
             return False
 
         # attempt to grab an IP
         # better hope we are connected because the timeout here is really long
-        cmd('sudo dhclient {}'.format(self._interface))
+        # cmd('sudo dhclient {}'.format(self._interface))
 
         # parse response
         return True
