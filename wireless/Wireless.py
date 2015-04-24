@@ -46,7 +46,6 @@ class Wireless:
             response = cmd('nmcli --version')
             parts = response.split()
             ver = parts[-1]
-            print 'test: '+ver
             compare = self.vercmp(ver, "0.9.9.0")
             if compare >= 0:
                 return 'nmcli0990'
