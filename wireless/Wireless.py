@@ -66,7 +66,7 @@ class Wireless:
 
     def vercmp(self, actual, test):
         def normalize(v):
-            return [int(x) for x in re.sub(r'(\.0+)*$','',v).split(".")]
+            return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
         return cmp(normalize(actual), normalize(test))
 
     # connect to a network
@@ -117,6 +117,7 @@ class WirelessDriver:
     @abstractmethod
     def power(self, power=None):
         pass
+
 
 # Linux nmcli Driver < 0.9.9.0
 class NmcliWireless(WirelessDriver):
@@ -213,6 +214,7 @@ class NmcliWireless(WirelessDriver):
         else:
             response = cmd('nmcli nm wifi')
             return 'enabled' in response
+
 
 # Linux nmcli Driver >= 0.9.9.0
 class Nmcli0990Wireless(WirelessDriver):
