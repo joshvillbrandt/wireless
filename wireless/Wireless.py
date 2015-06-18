@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 import subprocess
-import re
 from time import sleep
 
 
@@ -22,8 +21,6 @@ class Wireless:
         self._driver_name = self._detectDriver()
         if self._driver_name == 'nmcli':
             self._driver = NmcliWireless(interface=interface)
-        elif self._driver_name == 'nmcli0990':
-            self._driver = Nmcli0990Wireless(interface=interface)
         elif self._driver_name == 'wpa_supplicant':
             self._driver = WpasupplicantWireless(interface=interface)
         elif self._driver_name == 'networksetup':
@@ -43,14 +40,7 @@ class Wireless:
         # try nmcli (Ubuntu 14.04)
         response = cmd('which nmcli')
         if len(response) > 0 and 'not found' not in response:
-            response = cmd('nmcli --version')
-            parts = response.split()
-            ver = parts[-1]
-            compare = self.vercmp(ver, "0.9.9.0")
-            if compare >= 0:
-                return 'nmcli0990'
-            else:
-                return 'nmcli'
+            return 'nmcli'
 
         # try nmcli (Ubuntu w/o network-manager)
         response = cmd('which wpa_supplicant')
@@ -63,11 +53,6 @@ class Wireless:
             return 'networksetup'
 
         raise Exception('Unable to find compatible wireless driver.')
-
-    def vercmp(self, actual, test):
-        def normalize(v):
-            return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
-        return cmp(normalize(actual), normalize(test))
 
     # connect to a network
     def connect(self, ssid, password):
@@ -119,7 +104,7 @@ class WirelessDriver:
         pass
 
 
-# Linux nmcli Driver < 0.9.9.0
+# Linux nmcli Driver
 class NmcliWireless(WirelessDriver):
     _interface = None
 
@@ -213,103 +198,6 @@ class NmcliWireless(WirelessDriver):
             cmd('nmcli nm wifi off')
         else:
             response = cmd('nmcli nm wifi')
-            return 'enabled' in response
-
-
-# Linux nmcli Driver >= 0.9.9.0
-class Nmcli0990Wireless(WirelessDriver):
-    _interface = None
-
-    # init
-    def __init__(self, interface=None):
-        self.interface(interface)
-
-    # clean up connections where partial is part of the connection name
-    # this is needed to prevent the following error after extended use:
-    # 'maximum number of pending replies per connection has been reached'
-    def _clean(self, partial):
-        # list matching connections
-        response = cmd('nmcli --fields UUID,NAME con show | grep {}'.format(
-            partial))
-
-        # delete all of the matching connections
-        for line in response.splitlines():
-            if len(line) > 0:
-                uuid = line.split()[0]
-                cmd('nmcli con delete uuid {}'.format(uuid))
-
-    # ignore warnings in nmcli output
-    # sometimes there are warnings but we connected just fine
-    def _errorInResponse(self, response):
-        # no error if no response
-        if len(response) == 0:
-            return False
-
-        # loop through each line
-        for line in response.splitlines():
-            # all error lines start with 'Error'
-            if line.startswith('Error'):
-                return True
-
-        # if we didn't find an error then we are in the clear
-        return False
-
-    # connect to a network
-    def connect(self, ssid, password):
-        # clean up previous connection
-        self._clean(self.current())
-
-        # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
-            ssid, password, self._interface))
-
-        # parse response
-        return not self._errorInResponse(response)
-
-    # returned the ssid of the current network
-    def current(self):
-        # list active connections for all interfaces
-        response = cmd('nmcli con | grep {}'.format(
-            self.interface()))
-
-        # the current network is in the first column
-        for line in response.splitlines():
-            if len(line) > 0:
-                return line.split()[0]
-
-        # return none if there was not an active connection
-        return None
-
-    # return a list of wireless adapters
-    def interfaces(self):
-        # grab list of interfaces
-        response = cmd('nmcli dev')
-
-        # parse response
-        interfaces = []
-        for line in response.splitlines():
-            if 'wifi' in line:
-                # this line has our interface name in the first column
-                interfaces.append(line.split()[0])
-
-        # return list
-        return interfaces
-
-    # return the current wireless adapter
-    def interface(self, interface=None):
-        if interface is not None:
-            self._interface = interface
-        else:
-            return self._interface
-
-    # enable/disable wireless networking
-    def power(self, power=None):
-        if power is True:
-            cmd('nmcli r wifi on')
-        elif power is False:
-            cmd('nmcli r wifi off')
-        else:
-            response = cmd('nmcli r wifi')
             return 'enabled' in response
 
 
