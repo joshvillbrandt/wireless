@@ -2,7 +2,7 @@
 
 import unittest
 from wireless import Wireless
-from wireless import cmd
+from wireless.Wireless import cmd
 
 
 class TestWireless(unittest.TestCase):
