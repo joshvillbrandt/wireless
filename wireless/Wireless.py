@@ -8,7 +8,8 @@ from time import sleep
 def cmd(cmd):
     return subprocess.Popen(
         cmd, shell=True,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ).stdout.read().decode()
 
 
 # abstracts away wireless connection
