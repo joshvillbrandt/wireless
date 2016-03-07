@@ -50,6 +50,14 @@ Note: To use `wpa_supplicant`, `network-manager` (the backend for `nmcli`) must 
 
 This project uses [semantic versioning](http://semver.org/).
 
+### v0.3.2 - 2016/03/06
+
+* Added a few tests and fixed a py34 bug ([XayOn](https://github.com/XayOn))
+
+### v0.3.1 - 2015/04/24
+
+* Added version check for nmcli ([Silarn](https://github.com/Silarn))
+
 ### v0.3.0 - 2015/01/13
 
 * Added support for `wpa_supplicant`
@@ -79,7 +87,7 @@ Pull requests to the `develop` branch are welcomed!
 
 ## Publishing
 
-First, install `pandoc` to auto-convert Markdown syntax into reStructuredText:
+First, install `pandoc` so that setup.py can auto-convert Markdown syntax into reStructuredText:
 
 ```bash
 sudo apt-get install pandoc
