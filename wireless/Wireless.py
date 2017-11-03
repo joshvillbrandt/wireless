@@ -68,7 +68,9 @@ class Wireless:
     def vercmp(self, actual, test):
         def normalize(v):
             return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
-        return cmp(normalize(actual), normalize(test))
+        a = normalize(actual)
+        b = normalize(test)
+        return (a > b) - (a < b)
 
     # connect to a network
     def connect(self, ssid, password):
