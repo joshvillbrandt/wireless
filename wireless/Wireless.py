@@ -355,12 +355,12 @@ class WpasupplicantWireless(WirelessDriver):
         response = cmd('iwconfig {}'.format(
             self.interface()))
 
-        # the current network is on the first line like ESSID:"network"
+        # the current network is on the first line.
+        # ex: wlan0     IEEE 802.11AC  ESSID:"SSID"  Nickname:"<WIFI@REALTEK>"
         line = response.splitlines()[0]
-        line = line.replace('"', '')
-        parts = line.split('ESSID:')
-        if len(parts) > 1:
-            network = parts[1].strip()
+        match = re.search('ESSID:\"(.+?)\"', line)
+        if match is not None:
+            network = match.group(1)
             if network != 'off/any':
                 return network
 
