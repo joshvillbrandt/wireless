@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import subprocess
-import re
 from time import sleep
+from packaging import version
 
 
 # send a command to the shell and return the result
@@ -47,8 +47,7 @@ class Wireless:
             response = cmd('nmcli --version')
             parts = response.split()
             ver = parts[-1]
-            compare = self.vercmp(ver, "0.9.9.0")
-            if compare >= 0:
+            if version.parse(ver) > version.parse('0.9.9.0'):
                 return 'nmcli0990'
             else:
                 return 'nmcli'
@@ -64,11 +63,6 @@ class Wireless:
             return 'networksetup'
 
         raise Exception('Unable to find compatible wireless driver.')
-
-    def vercmp(self, actual, test):
-        def normalize(v):
-            return [int(x) for x in re.sub(r'(\.0+)*$', '', v).split(".")]
-        return cmp(normalize(actual), normalize(test))
 
     # connect to a network
     def connect(self, ssid, password):
