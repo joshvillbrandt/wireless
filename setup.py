@@ -24,8 +24,7 @@ setup(
     setup_requires=[
         'tox',
         'nose',
-        'flake8',
-        'packaging'
+        'flake8'
     ],
     install_requires=[
     ],
