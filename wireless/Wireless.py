@@ -3,6 +3,8 @@ import subprocess
 from time import sleep
 from packaging import version
 
+from utils import cleanse_mac_wifi_scan_res
+
 
 # send a command to the shell and return the result
 def cmd(cmd):
@@ -64,6 +66,10 @@ class Wireless:
 
         raise Exception('Unable to find compatible wireless driver.')
 
+    # scan available networks
+    def scan(self):
+        return self._driver.scan()
+
     # connect to a network
     def connect(self, ssid, password):
         return self._driver.connect(ssid, password)
@@ -92,6 +98,10 @@ class Wireless:
 # abstract class for all wireless drivers
 class WirelessDriver:
     __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def scan(self):
+        raise NotImplementedError
 
     @abstractmethod
     def connect(self, ssid, password):
@@ -404,6 +414,20 @@ class NetworksetupWireless(WirelessDriver):
     # init
     def __init__(self, interface=None):
         self.interface(interface)
+
+    # scan available networks
+    def scan(self):
+        response = cmd('airport -s')
+
+        if 'not found' not in response:
+            # parse and cleanse response
+            return cleanse_mac_wifi_scan_res(response)
+        else:
+            print('Please create a symlink of airport binary: '
+                  'ln -s /System/Library/PrivateFrameworks/'
+                  'Apple80211.framework/Versions/Current/'
+                  'Resources/airport /usr/local/bin/airport')
+            return False
 
     # connect to a network
     def connect(self, ssid, password):
