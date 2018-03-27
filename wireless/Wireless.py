@@ -3,7 +3,7 @@ import subprocess
 import re
 from time import sleep
 
-from utils import cleanse_mac_wifi_scan_res
+from .utils import cleanse_mac_wifi_scan_res
 
 
 # send a command to the shell and return the result
