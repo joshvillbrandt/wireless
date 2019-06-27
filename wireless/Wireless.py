@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import subprocess
 from time import sleep
 from packaging import version
+import re
 
 
 # send a command to the shell and return the result

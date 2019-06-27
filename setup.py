@@ -12,7 +12,7 @@ except (ImportError, OSError):
 
 setup(
     name='wireless',
-    version='0.3.2',
+    version='0.3.3',
     description='A dead simple, cross-platform Python library to connect to ' +
     'wireless networks.',
     long_description=long_description,

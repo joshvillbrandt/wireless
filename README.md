@@ -16,8 +16,6 @@ nmcli | Ubuntu 12.04, 14.04 | Linksys AE3000, Intel Centrino 6250
 wpa_supplicant | Ubuntu 12.04, 14.04 | Intel Centrino 6250
 networksetup | Mac OS 10.10 | Macbook Pro
 
-
-
 ## Setup
 
 ```bash
@@ -51,6 +49,11 @@ Note: To use `wpa_supplicant`, `network-manager` (the backend for `nmcli`) must 
 ## Change History
 
 This project uses [semantic versioning](http://semver.org/).
+
+### v0.3.3 - 2019/06/27
+
+* Fix version comparison for python3.5 ([pschmitt](https://github.com/pschmitt))
+* Update iwconfig current() to handle Nickname field ([jminardi](https://github.com/jminardi))
 
 ### v0.3.2 - 2016/03/06
 
@@ -96,8 +99,8 @@ sudo apt-get install pandoc
 sudo pip install pypandoc
 ```
 
-Then, following [this guide](http://peterdowns.com/posts/first-time-with-pypi.html), push the project to PyPI:
+Then, following [this guide](https://packaging.python.org/tutorials/packaging-projects/), push the project to PyPI:
 
 ```bash
-sudo python setup.py sdist upload -r pypi
+python3 -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 ```
