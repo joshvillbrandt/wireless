@@ -89,6 +89,9 @@ class Wireless:
     def driver(self):
         return self._driver_name
 
+    def disconnect(self):
+        return self._driver.disconnect()
+
 
 # abstract class for all wireless drivers
 class WirelessDriver:
@@ -114,6 +117,9 @@ class WirelessDriver:
     def power(self, power=None):
         pass
 
+    @abstractmethod
+    def disconnect(self):
+        pass
 
 # Linux nmcli Driver < 0.9.9.0
 class NmcliWireless(WirelessDriver):
@@ -163,6 +169,10 @@ class NmcliWireless(WirelessDriver):
             ssid, password, self._interface))
 
         # parse response
+        return not self._errorInResponse(response)
+
+    def disconnect(self):
+        response = cmd('nmcli dev disconnect iface {}'.format(self._interface))
         return not self._errorInResponse(response)
 
     # returned the ssid of the current network
@@ -249,6 +259,10 @@ class Nmcli0990Wireless(WirelessDriver):
 
         # if we didn't find an error then we are in the clear
         return False
+
+    def disconnect(self):
+        response = cmd('nmcli dev disconnect iface {}'.format(self._interface))
+        return not self._errorInResponse(response)
 
     # connect to a network
     def connect(self, ssid, password):
