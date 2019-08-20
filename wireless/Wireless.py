@@ -3,7 +3,7 @@ import subprocess
 from time import sleep
 from packaging import version
 import re
-
+import lsb_release
 
 # send a command to the shell and return the result
 def cmd(cmd):
@@ -11,6 +11,14 @@ def cmd(cmd):
         cmd, shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     ).stdout.read().decode()
+
+
+def get_nmcli_if_param():
+    main_version = int(lsb_release.get_lsb_information()['DESCRIPTION'].split()[1][0:2])
+    if main_version >= 18:
+        return 'ifname'
+    else:
+        return 'iface'
 
 
 # abstracts away wireless connection
@@ -159,8 +167,8 @@ class NmcliWireless(WirelessDriver):
         self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
-            ssid, password, self._interface))
+        response = cmd('nmcli dev wifi connect {} password {} {} {}'.format(
+            ssid, password, get_nmcli_if_param(), self._interface))
 
         # parse response
         return not self._errorInResponse(response)
@@ -256,8 +264,8 @@ class Nmcli0990Wireless(WirelessDriver):
         self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
-            ssid, password, self._interface))
+        response = cmd('nmcli dev wifi connect {} password {} {} {}'.format(
+            ssid, password, get_nmcli_if_param(), self._interface))
 
         # parse response
         return not self._errorInResponse(response)
