@@ -13,6 +13,16 @@ def cmd(cmd):
     ).stdout.read().decode()
 
 
+def get_nmcli_if_param():
+    with open('/etc/lsb-release') as f:
+        data = f.read()
+        main_version = int(re.search('(?<=RELEASE=)[0-9]+', data).group(0))
+    if main_version >= 18:
+        return 'ifname'
+    else:
+        return 'iface'
+
+
 # abstracts away wireless connection
 class Wireless:
     _driver_name = None
@@ -159,8 +169,8 @@ class NmcliWireless(WirelessDriver):
         self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
-            ssid, password, self._interface))
+        response = cmd('nmcli dev wifi connect {} password {} {} {}'.format(
+            ssid, password, get_nmcli_if_param(), self._interface))
 
         # parse response
         return not self._errorInResponse(response)
@@ -256,8 +266,8 @@ class Nmcli0990Wireless(WirelessDriver):
         self._clean(self.current())
 
         # attempt to connect
-        response = cmd('nmcli dev wifi connect {} password {} iface {}'.format(
-            ssid, password, self._interface))
+        response = cmd('nmcli dev wifi connect {} password {} {} {}'.format(
+            ssid, password, get_nmcli_if_param(), self._interface))
 
         # parse response
         return not self._errorInResponse(response)
