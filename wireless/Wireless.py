@@ -3,7 +3,7 @@ import subprocess
 from time import sleep
 from packaging import version
 import re
-import lsb_release
+
 
 # send a command to the shell and return the result
 def cmd(cmd):
@@ -14,7 +14,9 @@ def cmd(cmd):
 
 
 def get_nmcli_if_param():
-    main_version = int(lsb_release.get_lsb_information()['DESCRIPTION'].split()[1][0:2])
+    with open('/etc/lsb-release') as f:
+        data = f.read()
+        main_version = int(re.search('(?<=RELEASE=)[0-9]+', data).group(0))
     if main_version >= 18:
         return 'ifname'
     else:
