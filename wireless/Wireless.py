@@ -66,8 +66,8 @@ class Wireless:
         raise Exception('Unable to find compatible wireless driver.')
 
     # connect to a network
-    def connect(self, ssid, password):
-        return self._driver.connect(ssid, password)
+    def connect(self, ssid, password=None, identity=None):
+        return self._driver.connect(ssid, password, identity)
 
     # return the ssid of the current network
     def current(self):
@@ -95,7 +95,7 @@ class WirelessDriver:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def connect(self, ssid, password):
+    def connect(self, ssid, password=None, identity=None):
         pass
 
     @abstractmethod
@@ -319,18 +319,26 @@ class WpasupplicantWireless(WirelessDriver):
         self.interface(interface)
 
     # connect to a network
-    def connect(self, ssid, password):
+    def connect(self, ssid, password=None, identity=None):
         # attempt to stop any active wpa_supplicant instances
         # ideally we do this just for the interface we care about
         cmd('sudo killall wpa_supplicant')
 
         # don't do DHCP for GoPros; can cause dropouts with the server
-        cmd('sudo ifconfig {} 10.5.5.10/24 up'.format(self._interface))
+        # cmd('sudo ifconfig {} 10.5.5.10/24 up'.format(self._interface))
 
         # create configuration file
         f = open(self._file, 'w')
-        f.write('network={{\n    ssid="{}"\n    psk="{}"\n}}\n'.format(
-            ssid, password))
+        if identity:
+            f.write('network={{\n    ssid="{}"\n    key_mgmt=WPA-EAP\n    eap=PEAP\n    identity="{}"\n    password="{}"\n}}\n'.format(
+                ssid, identity, password))
+        elif password:
+            f.write('network={{\n    ssid="{}"\n    psk="{}"\n}}\n'.format(
+                ssid, password))
+        else:
+            f.write('network={{\n    ssid="{}"\n    key_mgmt=NONE\n}}\n'.format(
+                ssid))
+            
         f.close()
 
         # attempt to connect
