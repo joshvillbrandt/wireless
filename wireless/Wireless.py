@@ -330,7 +330,7 @@ class WpasupplicantWireless(WirelessDriver):
         # create configuration file
         f = open(self._file, 'w')
         if identity:
-            f.write('network={{\n    ssid="{}"\n    key_mgmt=WPA-EAP\n    eap=PEAP\n    identity="{}"\n    password="{}"\n}}\n'.format(
+            f.write('network={{\n    ssid="{}"\n    key_mgmt=WPA-EAP\n    eap=TTLS PEAP\n    identity="{}"\n    password="{}"\n}}\n'.format(
                 ssid, identity, password))
         elif password:
             f.write('network={{\n    ssid="{}"\n    psk="{}"\n}}\n'.format(
